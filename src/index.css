@@ -1,0 +1,389 @@
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 15%;
+
+    --primary: 217 100% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 0 0% 15%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 43 100% 50%;
+    --accent-foreground: 0 0% 15%;
+
+    --destructive: 348 100% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 217 100% 45%;
+
+    --radius: 0.5rem;
+
+    /* Night Carnival Colors */
+    --carnival-red: 348 100% 55%;
+    --carnival-yellow: 43 100% 55%;
+    --carnival-blue: 250 72% 60%;
+    --carnival-pink: 330 100% 71%;
+    --carnival-dark: 250 30% 8%;
+    --carnival-deep: 250 25% 12%;
+
+    /* Neon Glow Colors */
+    --neon-pink: 330 100% 65%;
+    --neon-cyan: 180 100% 50%;
+    --neon-yellow: 50 100% 60%;
+    --neon-purple: 270 100% 65%;
+
+    /* Windows XP Colors */
+    --xp-blue: 217 100% 45%;
+    --xp-blue-light: 205 100% 53%;
+    --xp-beige: 43 22% 90%;
+    --xp-button: 40 13% 82%;
+
+    /* Social Colors */
+    --instagram-blue: 204 100% 48%;
+    --instagram-gradient-start: 280 87% 44%;
+    --instagram-gradient-end: 348 100% 51%;
+  }
+
+  .dark {
+    --background: 250 30% 5%;
+    --foreground: 0 0% 95%;
+    --card: 250 25% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 250 25% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 217 100% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 250 20% 18%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 250 20% 15%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 43 100% 55%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 348 100% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 250 20% 20%;
+    --input: 250 20% 20%;
+    --ring: 217 100% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+  }
+
+  .font-carnival {
+    font-family: 'Alfa Slab One', cursive;
+  }
+
+  .font-display {
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  .font-system {
+    font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+  }
+}
+
+@layer components {
+  /* Night Carnival gradient background */
+  .carnival-gradient {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--carnival-dark)) 0%,
+      hsl(var(--carnival-deep)) 40%,
+      hsl(250 35% 15%) 100%
+    );
+  }
+
+  /* Neon glow text */
+  .neon-text-pink {
+    color: hsl(var(--neon-pink));
+    text-shadow: 
+      0 0 7px hsl(var(--neon-pink)),
+      0 0 10px hsl(var(--neon-pink)),
+      0 0 21px hsl(var(--neon-pink)),
+      0 0 42px hsl(var(--neon-pink));
+  }
+
+  .neon-text-cyan {
+    color: hsl(var(--neon-cyan));
+    text-shadow: 
+      0 0 7px hsl(var(--neon-cyan)),
+      0 0 10px hsl(var(--neon-cyan)),
+      0 0 21px hsl(var(--neon-cyan)),
+      0 0 42px hsl(var(--neon-cyan));
+  }
+
+  .neon-text-yellow {
+    color: hsl(var(--neon-yellow));
+    text-shadow: 
+      0 0 7px hsl(var(--neon-yellow)),
+      0 0 10px hsl(var(--neon-yellow)),
+      0 0 21px hsl(var(--neon-yellow)),
+      0 0 42px hsl(var(--neon-yellow));
+  }
+
+  /* Neon border glow */
+  .neon-border {
+    box-shadow: 
+      0 0 5px hsl(var(--neon-pink)),
+      0 0 10px hsl(var(--neon-pink)),
+      inset 0 0 5px hsl(var(--neon-pink) / 0.3);
+  }
+
+  /* Windows XP title bar gradient */
+  .xp-titlebar {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--xp-blue-light)) 0%,
+      hsl(var(--xp-blue)) 100%
+    );
+  }
+
+  /* XP button style */
+  .xp-button {
+    background: hsl(var(--xp-button));
+    border: 2px outset hsl(var(--xp-button));
+    font-family: 'Tahoma', sans-serif;
+    font-size: 11px;
+    padding: 4px 16px;
+    cursor: pointer;
+  }
+
+  .xp-button:active {
+    border-style: inset;
+  }
+
+  .xp-button-primary {
+    background: hsl(var(--xp-blue));
+    color: white;
+    border: 2px outset hsl(var(--xp-blue));
+  }
+
+  /* Neon pulsing glow animation */
+  @keyframes pulse-glow {
+    0%, 100% {
+      filter: drop-shadow(0 0 8px hsl(var(--neon-pink) / 0.6));
+    }
+    50% {
+      filter: drop-shadow(0 0 30px hsl(var(--neon-pink)));
+    }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Neon flicker animation */
+  @keyframes neon-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+      opacity: 1;
+      text-shadow: 
+        0 0 7px currentColor,
+        0 0 10px currentColor,
+        0 0 21px currentColor,
+        0 0 42px currentColor;
+    }
+    20%, 24%, 55% {
+      opacity: 0.6;
+      text-shadow: none;
+    }
+  }
+
+  .neon-flicker {
+    animation: neon-flicker 3s infinite;
+  }
+
+  /* Confetti animation */
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(-100vh) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0.7;
+    }
+  }
+
+  .confetti {
+    animation: confetti-fall linear infinite;
+  }
+
+  /* Spotlight rotation */
+  @keyframes spotlight-rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .spotlight-rotate {
+    animation: spotlight-rotate 8s linear infinite;
+  }
+
+  /* Marquee blinking lights */
+  @keyframes blink-lights {
+    0%, 50%, 100% {
+      opacity: 1;
+    }
+    25%, 75% {
+      opacity: 0.3;
+    }
+  }
+
+  .blink-light-odd {
+    animation: blink-lights 1s ease-in-out infinite;
+  }
+
+  .blink-light-even {
+    animation: blink-lights 1s ease-in-out infinite 0.5s;
+  }
+
+  /* Floating animation */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Red dot pulsing */
+  @keyframes pulse-dot {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .pulse-dot {
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+
+  /* Spark animation */
+  @keyframes spark {
+    0% {
+      opacity: 1;
+      transform: scale(0);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.5);
+    }
+  }
+
+  .spark {
+    animation: spark 0.3s ease-out forwards;
+  }
+
+  /* Screen flicker */
+  @keyframes flicker {
+    0%, 100% {
+      opacity: 1;
+    }
+    10%, 30%, 50% {
+      opacity: 0;
+    }
+    20%, 40%, 60% {
+      opacity: 1;
+    }
+  }
+
+  .flicker {
+    animation: flicker 0.5s ease-in-out;
+  }
+
+  /* Wire glow */
+  @keyframes wire-glow {
+    0% {
+      stroke: #000;
+      filter: none;
+    }
+    100% {
+      stroke: #FFD700;
+      filter: drop-shadow(0 0 10px #FFD700);
+    }
+  }
+
+  .wire-glow {
+    animation: wire-glow 0.5s ease-out forwards;
+  }
+
+  /* Stripe rotation */
+  @keyframes stripe-rotate {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 100px 100px;
+    }
+  }
+
+  .animated-stripes {
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 35px,
+      rgba(255, 255, 255, 0.1) 35px,
+      rgba(255, 255, 255, 0.1) 70px
+    );
+    animation: stripe-rotate 10s linear infinite;
+  }
+
+  /* Hide scrollbar */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Instagram gradient */
+  .instagram-gradient {
+    background: linear-gradient(
+      45deg,
+      hsl(var(--instagram-gradient-start)),
+      hsl(var(--instagram-gradient-end))
+    );
+  }
+}
