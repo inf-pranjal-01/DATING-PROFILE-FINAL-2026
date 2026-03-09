@@ -1,4 +1,4 @@
-<h1>For You – Interactive Web + AI Project</h1>
+<h1 align="center">💗For You💗</h1>
 
 <p>
 <b>For You</b> is a small web project that combines an interactive frontend
@@ -119,10 +119,11 @@ and easier to update.
 </ul>
 
 <p>
-Live site:
+<b>Live site:
 <a href="https://dating-profile-final-2026.vercel.app/">
 https://dating-profile-final-2026.vercel.app/
 </a>
+</b>
 </p>
 
 
@@ -133,6 +134,8 @@ https://dating-profile-final-2026.vercel.app/
 <li>Persistent FastAPI service</li>
 <li>Production Uvicorn configuration</li>
 <li>Secure environment variable management</li>
+
+   
 </ul>
 
-<p align="center">Curiosity looks good on you — we might look good together.</p> 
+<p align="center">⭐ Curiosity looks good on you — we might look good together. ⭐</p> 
