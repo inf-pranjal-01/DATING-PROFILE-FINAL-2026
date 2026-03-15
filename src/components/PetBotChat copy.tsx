@@ -18,11 +18,11 @@ const initialMessages: Message[] = [
 ];
 
 const suggestedQuestions = [
-  "Is he loyal?",
-  "Any red flags ?",
-  "Is he good in code?",
-  "Is he romantic ?",
-  "Tell me something special about him.",
+  "How did you two meet?",
+  "What makes him special?",
+  "What's the biggest green flag?",
+  "Is he actually serious about this?",
+  "Tell me something embarrassing about him.",
 ];
 
 const predefinedResponses: Record<string, string> = {
@@ -35,21 +35,17 @@ const PetBotChat = () => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(true);
   const [mode, setMode] = useState<'text' | 'voice'>('text');
   const chatRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   const sendMessageToBackend = async (message: string) => {
     try {
-      const response = await fetch("https://rag-agent-pet-bot.onrender.com/chat", {
+      const response = await fetch("http://127.0.0.1:8000/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
-
       const data = await response.json();
       return data.reply;
     } catch (error) {
@@ -65,8 +61,6 @@ const PetBotChat = () => {
   }, [messages, isTyping]);
 
   const handleSuggestionClick = async (question: string) => {
-    setShowSuggestions(false);
-    
     setMessages(prev => [...prev, { id: prev.length + 1, type: 'user', text: question }]);
 
     if (predefinedResponses[question]) {
@@ -84,24 +78,17 @@ const PetBotChat = () => {
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
-    setShowSuggestions(false);
-
     const userText = inputValue;
     setMessages(prev => [...prev, { id: prev.length + 1, type: 'user', text: userText }]);
     setInputValue("");
     setIsTyping(true);
-
     const aiReply = await sendMessageToBackend(userText);
     setIsTyping(false);
     setMessages(prev => [...prev, { id: prev.length + 1, type: 'Kaluii', text: aiReply }]);
   };
 
-
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
-    }
+    if (e.key === 'Enter') handleSendMessage();
   };
 
   if (!isOpen) return null;
@@ -116,9 +103,9 @@ const PetBotChat = () => {
           onClick={() => setIsMinimized(false)}
           className="fixed bottom-5 right-5 z-[1000] bg-card rounded-full px-4 py-2 shadow-lg flex items-center gap-2 hover:shadow-xl transition-shadow border border-border"
         >
-          <span className="w-2 h-2 bg-carnival-red rounded-full pulse-dot" />
+          <span className="w-2 h-2 bg-[hsl(var(--carnival-red))] rounded-full pulse-dot" />
           <span className="font-bold text-sm text-foreground">💬 Pet Bot</span>
-          <span className="bg-carnival-red text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <span className="bg-[hsl(var(--carnival-red))] text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
             1
           </span>
         </motion.button>
@@ -153,7 +140,7 @@ const PetBotChat = () => {
                 <div className="instagram-gradient p-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-white rounded-full pulse-dot" />
-                    <span className="text-white font-bold text-sm">Kaluii [Its on render.com , plz wait]</span>
+                    <span className="text-white font-bold text-sm">Pet Bot (LIVE)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -191,7 +178,7 @@ const PetBotChat = () => {
                         <div
                           className={`rounded-2xl px-4 py-2 text-sm ${
                             message.type === 'user'
-                              ? 'bg-instagram-blue text-white'
+                              ? 'bg-[hsl(var(--instagram-blue))] text-white'
                               : 'bg-secondary text-foreground'
                           }`}
                         >
@@ -201,7 +188,6 @@ const PetBotChat = () => {
                     </motion.div>
                   ))}
 
-                  {/* Typing indicator */}
                   {isTyping && (
                     <motion.div
                       initial={{ opacity: 0 }}
@@ -244,7 +230,7 @@ const PetBotChat = () => {
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type your question here..."
-                    className="flex-1 bg-secondary rounded-full px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-instagram-blue"
+                    className="flex-1 bg-secondary rounded-full px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[hsl(var(--instagram-blue))]"
                   />
                   {/* Voice mode button */}
                   <button
@@ -257,7 +243,7 @@ const PetBotChat = () => {
                   <button
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim()}
-                    className="w-9 h-9 rounded-full bg-instagram-blue text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-instagram-blue/90 transition-colors"
+                    className="w-9 h-9 rounded-full bg-[hsl(var(--instagram-blue))] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-colors"
                   >
                     <Send size={16} />
                   </button>
@@ -270,7 +256,5 @@ const PetBotChat = () => {
     </AnimatePresence>
   );
 };
-    
- 
 
- export default PetBotChat;
+export default PetBotChat;
