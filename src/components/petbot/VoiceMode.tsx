@@ -22,7 +22,7 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
 
   // Start recording audio
   const startListening = useCallback(async () => {
-    if (voiceState !== 'idle') return; // ✅ Fix 6: Prevent overlap
+    if (voiceState !== 'idle') return;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -32,7 +32,7 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
         mimeType: 'audio/webm',
       });
 
-      audioChunksRef.current = []; // ✅ Fix 2: Always clear buffer before recording
+      audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -41,7 +41,7 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
       };
 
       mediaRecorder.onstop = async () => {
-        mediaRecorderRef.current = null; // ✅ Fix 4: Reset recorder properly
+        mediaRecorderRef.current = null;
         await sendAudioToBackend();
       };
 
@@ -59,7 +59,7 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
 
   // Stop recording
   const stopListening = useCallback(() => {
-    if (!mediaRecorderRef.current) return; // ✅ Fix 5: State-independent check
+    if (!mediaRecorderRef.current) return;
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -78,7 +78,7 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
     try {
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
 
-      // ✅ Fix 3: Validate before sending
+      
       if (audioBlob.size < 2000) {
         console.error('Audio too small, ignoring');
         setVoiceState('idle');
@@ -278,7 +278,7 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
       {/* Mic button */}
       <div className="p-4 bg-card border-t border-border flex justify-center">
         <motion.button
-          onClick={() => { // ✅ Fix 1: Simple toggle — no timers, no race conditions
+          onClick={() => {
             if (voiceState === 'idle') {
               startListening();
             } else if (voiceState === 'listening') {
