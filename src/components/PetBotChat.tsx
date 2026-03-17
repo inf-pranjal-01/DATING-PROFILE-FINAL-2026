@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Minus, X, Send, Mic } from 'lucide-react';
-import VoiceMode from './petbot/VoiceMode';
+import VoiceMode from './petbot/VoiceMode.tsx';
 
 interface Message {
   id: number;

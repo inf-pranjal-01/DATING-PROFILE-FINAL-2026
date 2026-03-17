@@ -14,30 +14,130 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
   const [subtitle, setSubtitle] = useState('');
   const [userTranscript, setUserTranscript] = useState('');
   const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Audio recording refs
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null); // ← NEW: save stream
 
-  // Simulate voice interaction for now — will be replaced with real API
-  const startListening = useCallback(() => {
-    setVoiceState('listening');
-    setSubtitle('');
-    setUserTranscript('Listening...');
+  // Start recording audio
+  const startListening = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream; // ← save stream reference
+      
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm',
+      });
+
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        // ← REMOVED stream.getTracks() from here, handled in stopListening now
+        await sendAudioToBackend();
+      };
+
+      mediaRecorder.start();
+      mediaRecorderRef.current = mediaRecorder;
+
+      setVoiceState('listening');
+      setSubtitle('');
+      setUserTranscript('Listening...');
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      alert('Could not access microphone. Please check permissions.');
+    }
   }, []);
 
+  // Stop recording
   const stopListening = useCallback(() => {
     if (voiceState !== 'listening') return;
 
-    setVoiceState('processing');
-    setUserTranscript('');
+    // ← Stop mic tracks IMMEDIATELY — browser recording indicator gone right away
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
 
-    // Simulate processing → speaking (placeholder until real API)
-    setTimeout(() => {
-      setVoiceState('speaking');
-      setSubtitle("Hey! I heard you 🎤 This is where the AI voice response will play. Connect your API to bring me to life!");
-
-      setTimeout(() => {
-        setVoiceState('idle');
-      }, 4000);
-    }, 1500);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      setVoiceState('processing');
+      setUserTranscript('Processing...');
+    }
   }, [voiceState]);
+
+  // Send audio to backend
+  const sendAudioToBackend = async () => {
+    try {
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+
+
+
+
+
+
+
+
+
+      const API_URL = 'https://rag-agent-pet-bot.onrender.com';
+
+
+
+
+
+
+
+
+
+
+
+      const response = await fetch(`${API_URL}/voice_chat`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Backend error');
+
+      const data = await response.json();
+      
+      setSubtitle(data.text);
+      setUserTranscript('');
+
+      playAudioResponse(data.voice); 
+
+    } catch (error) {
+      console.error('Error calling backend:', error);
+      setVoiceState('idle');
+      setSubtitle('Sorry, something went wrong. Please try again.');
+      setTimeout(() => setSubtitle(''), 3000);
+    }
+  };
+
+  // Play base64 audio
+  const playAudioResponse = (base64Audio: string) => {
+    setVoiceState('speaking');
+
+    const audioUrl = `data:audio/mp3;base64,${base64Audio}`;
+    const audio = new Audio(audioUrl);
+    audioPlayerRef.current = audio;
+
+    audio.onended = () => setVoiceState('idle');
+    audio.onerror = () => {
+      console.error('Error playing audio');
+      setVoiceState('idle');
+    };
+
+    audio.play();
+  };
 
   const handleMicDown = () => {
     holdTimerRef.current = setTimeout(() => {
@@ -53,14 +153,21 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
     if (voiceState === 'listening') {
       stopListening();
     } else if (voiceState === 'idle') {
-      // Tap to toggle
       startListening();
     }
   };
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+      // ← Stop stream on unmount too
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
+      }
     };
   }, []);
 
@@ -125,7 +232,6 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-3xl border-2 border-border shadow-lg">
             🤖
           </div>
-          {/* Status ring */}
           <motion.div
             className="absolute -inset-1 rounded-full border-2"
             style={{ borderColor: stateColor[voiceState] }}
@@ -133,11 +239,7 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
               opacity: voiceState === 'idle' ? 0.3 : [0.4, 1, 0.4],
               scale: voiceState === 'speaking' ? [1, 1.15, 1] : 1,
             }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
           />
         </motion.div>
 
@@ -160,7 +262,7 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
           />
         </div>
 
-        {/* User transcript (while listening) */}
+        {/* User transcript */}
         <AnimatePresence>
           {userTranscript && (
             <motion.p
@@ -195,7 +297,9 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
               animate={{ opacity: 0.4 }}
               className="text-xs text-muted-foreground text-center"
             >
-              Subtitles will appear here
+              {voiceState === 'listening'
+                ? '🎙️ Tap mic again when done speaking...'
+                : 'Subtitles will appear here'}
             </motion.p>
           )}
         </AnimatePresence>
@@ -226,7 +330,6 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
                   : '0 0 20px hsl(var(--neon-pink) / 0.5), 0 0 40px hsl(var(--neon-pink) / 0.2)',
           }}
         >
-          {/* Ripple ring while listening */}
           {voiceState === 'listening' && (
             <motion.div
               className="absolute inset-0 rounded-full border-2 border-[hsl(var(--neon-cyan))]"
@@ -234,7 +337,6 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
               transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut' }}
             />
           )}
-
           {voiceState === 'listening' ? (
             <MicOff size={24} className="text-background" />
           ) : (
