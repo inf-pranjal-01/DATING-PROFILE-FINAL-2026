@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, X, Send } from 'lucide-react';
+import { Minus, X, Send, Mic } from 'lucide-react';
+import VoiceMode from './petbot/VoiceMode.tsx';
 
 interface Message {
   id: number;
@@ -35,6 +36,7 @@ const PetBotChat = () => {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [mode, setMode] = useState<'text' | 'voice'>('text');
   const chatRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -127,116 +129,148 @@ const PetBotChat = () => {
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20 }}
           className="fixed bottom-5 right-5 z-[1000] w-80 max-w-[calc(100vw-40px)] rounded-2xl overflow-hidden shadow-2xl border border-border bg-card"
+          style={{ height: mode === 'voice' ? '480px' : 'auto' }}
         >
-          {/* Header */}
-          <div className="instagram-gradient p-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-white rounded-full pulse-dot" />
-              <span className="text-white font-bold text-sm">Kaluii [Its on render.com , plz wait]</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsMinimized(true)}
-                className="text-white/80 hover:text-white"
-              >
-                <Minus size={18} />
-              </button>
-              <button
-                onClick={() => setIsMinimized(true)}
-                className="text-white/80 hover:text-white"
-              >
-                <X size={18} />
-              </button>
-            </div>
-          </div>
-
-          {/* Chat area */}
-          <div
-            ref={chatRef}
-            className="h-[350px] overflow-y-auto p-4 space-y-3 bg-muted/50"
-          >
-            {messages.map((message, index) => (
+          <AnimatePresence mode="wait">
+            {mode === 'voice' ? (
               <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index < initialMessages.length ? 0 : 0.1 }}
-                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                key="voice"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="h-full flex flex-col"
               >
-                <div className="flex items-start gap-2 max-w-[80%]">
-                  {message.type === 'Kaluii' && (
-                    <span className="text-lg">🤖</span>
-                  )}
-                  <div
-                    className={`rounded-2xl px-4 py-2 text-sm ${
-                      message.type === 'user'
-                        ? 'bg-instagram-blue text-white'
-                        : 'bg-secondary text-foreground'
-                    }`}
-                  >
-                    {message.text}
+                <VoiceMode onBack={() => setMode('text')} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="text"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+              >
+                {/* Header */}
+                <div className="instagram-gradient p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-white rounded-full pulse-dot" />
+                    <span className="text-white font-bold text-sm">Kaluii [Its on render.com , plz wait]</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsMinimized(true)}
+                      className="text-white/80 hover:text-white"
+                    >
+                      <Minus size={18} />
+                    </button>
+                    <button
+                      onClick={() => setIsMinimized(true)}
+                      className="text-white/80 hover:text-white"
+                    >
+                      <X size={18} />
+                    </button>
                   </div>
                 </div>
-              </motion.div>
-            ))}
 
-            {/* Typing indicator */}
-            {isTyping && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-2"
-              >
-                <span className="text-lg">🤖</span>
-                <div className="bg-secondary rounded-2xl px-4 py-2">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                {/* Chat area */}
+                <div
+                  ref={chatRef}
+                  className="h-[350px] overflow-y-auto p-4 space-y-3 bg-muted/50"
+                >
+                  {messages.map((message, index) => (
+                    <motion.div
+                      key={message.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index < initialMessages.length ? 0 : 0.1 }}
+                      className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className="flex items-start gap-2 max-w-[80%]">
+                        {message.type === 'Kaluii' && (
+                          <span className="text-lg">🤖</span>
+                        )}
+                        <div
+                          className={`rounded-2xl px-4 py-2 text-sm ${
+                            message.type === 'user'
+                              ? 'bg-instagram-blue text-white'
+                              : 'bg-secondary text-foreground'
+                          }`}
+                        >
+                          {message.text}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+
+                  {/* Typing indicator */}
+                  {isTyping && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex items-center gap-2"
+                    >
+                      <span className="text-lg">🤖</span>
+                      <div className="bg-secondary rounded-2xl px-4 py-2">
+                        <div className="flex gap-1">
+                          <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Suggestions row */}
+                <div className="px-3 pt-2 pb-0 bg-card border-t border-border overflow-x-auto scrollbar-hide">
+                  <div className="flex gap-2 whitespace-nowrap pb-1">
+                    {suggestedQuestions.map((q) => (
+                      <button
+                        key={q}
+                        onClick={() => handleSuggestionClick(q)}
+                        className="shrink-0 text-xs px-3 py-1.5 rounded-full border border-[hsl(var(--neon-pink)/0.4)] bg-[hsl(var(--neon-pink)/0.1)] text-[hsl(var(--neon-pink))] hover:bg-[hsl(var(--neon-pink)/0.2)] transition-colors"
+                      >
+                        {q}
+                      </button>
+                    ))}
                   </div>
+                </div>
+
+                {/* Input area */}
+                <div className="p-3 bg-card border-t border-border flex items-center gap-2">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type your question here..."
+                    className="flex-1 bg-secondary rounded-full px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-instagram-blue"
+                  />
+                  {/* Voice mode button */}
+                  <button
+                    onClick={() => setMode('voice')}
+                    className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105 bg-[hsl(var(--neon-pink)/0.15)] text-[hsl(var(--neon-pink))] hover:bg-[hsl(var(--neon-pink)/0.25)]"
+                    title="Switch to voice mode"
+                  >
+                    <Mic size={16} />
+                  </button>
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim()}
+                    className="w-9 h-9 rounded-full bg-instagram-blue text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-instagram-blue/90 transition-colors"
+                  >
+                    <Send size={16} />
+                  </button>
                 </div>
               </motion.div>
             )}
-          </div>
-
-          {/* Suggestions row */}
-          <div className="px-3 pt-2 pb-0 bg-card border-t border-border overflow-x-auto scrollbar-hide">
-            <div className="flex gap-2 whitespace-nowrap pb-1">
-              {suggestedQuestions.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => handleSuggestionClick(q)}
-                  className="shrink-0 text-xs px-3 py-1.5 rounded-full border border-[hsl(var(--neon-pink)/0.4)] bg-[hsl(var(--neon-pink)/0.1)] text-[hsl(var(--neon-pink))] hover:bg-[hsl(var(--neon-pink)/0.2)] transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Input area */}
-          <div className="p-3 bg-card border-t border-border flex items-center gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your question here..."
-              className="flex-1 bg-secondary rounded-full px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-instagram-blue"
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={!inputValue.trim()}
-              className="w-9 h-9 rounded-full bg-instagram-blue text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-instagram-blue/90 transition-colors"
-            >
-              <Send size={16} />
-            </button>
-          </div>
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
   );
 };
+    
+ 
 
-export default PetBotChat;
+ export default PetBotChat;
