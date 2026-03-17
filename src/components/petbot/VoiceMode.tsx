@@ -13,25 +13,26 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [subtitle, setSubtitle] = useState('');
   const [userTranscript, setUserTranscript] = useState('');
-  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Audio recording refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null); // ← NEW: save stream
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Start recording audio
   const startListening = useCallback(async () => {
+    if (voiceState !== 'idle') return; // ✅ Fix 6: Prevent overlap
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream; // ← save stream reference
+      streamRef.current = stream;
       
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm',
       });
 
-      audioChunksRef.current = [];
+      audioChunksRef.current = []; // ✅ Fix 2: Always clear buffer before recording
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -40,7 +41,7 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
       };
 
       mediaRecorder.onstop = async () => {
-        // ← REMOVED stream.getTracks() from here, handled in stopListening now
+        mediaRecorderRef.current = null; // ✅ Fix 4: Reset recorder properly
         await sendAudioToBackend();
       };
 
@@ -54,51 +55,40 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
       console.error('Error accessing microphone:', error);
       alert('Could not access microphone. Please check permissions.');
     }
-  }, []);
+  }, [voiceState]);
 
   // Stop recording
   const stopListening = useCallback(() => {
-    if (voiceState !== 'listening') return;
+    if (!mediaRecorderRef.current) return; // ✅ Fix 5: State-independent check
 
-    // ← Stop mic tracks IMMEDIATELY — browser recording indicator gone right away
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
 
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    if (mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
       setVoiceState('processing');
       setUserTranscript('Processing...');
     }
-  }, [voiceState]);
+  }, []);
 
   // Send audio to backend
   const sendAudioToBackend = async () => {
     try {
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+
+      // ✅ Fix 3: Validate before sending
+      if (audioBlob.size < 2000) {
+        console.error('Audio too small, ignoring');
+        setVoiceState('idle');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
 
-
-
-
-
-
-
-
-
       const API_URL = 'https://rag-agent-pet-bot.onrender.com';
-
-
-
-
-
-
-
-
-
-
 
       const response = await fetch(`${API_URL}/voice_chat`, {
         method: 'POST',
@@ -139,29 +129,9 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
     audio.play();
   };
 
-  const handleMicDown = () => {
-    holdTimerRef.current = setTimeout(() => {
-      startListening();
-    }, 150);
-  };
-
-  const handleMicUp = () => {
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-    if (voiceState === 'listening') {
-      stopListening();
-    } else if (voiceState === 'idle') {
-      startListening();
-    }
-  };
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
-      // ← Stop stream on unmount too
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -308,10 +278,13 @@ const VoiceMode = ({ onBack }: VoiceModeProps) => {
       {/* Mic button */}
       <div className="p-4 bg-card border-t border-border flex justify-center">
         <motion.button
-          onMouseDown={handleMicDown}
-          onMouseUp={handleMicUp}
-          onTouchStart={handleMicDown}
-          onTouchEnd={handleMicUp}
+          onClick={() => { // ✅ Fix 1: Simple toggle — no timers, no race conditions
+            if (voiceState === 'idle') {
+              startListening();
+            } else if (voiceState === 'listening') {
+              stopListening();
+            }
+          }}
           disabled={voiceState === 'processing' || voiceState === 'speaking'}
           whileTap={{ scale: 0.92 }}
           className="relative w-16 h-16 rounded-full flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
