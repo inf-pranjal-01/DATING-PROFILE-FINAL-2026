@@ -78,7 +78,7 @@ const ClaimPrizeSection = () => {
                 </p>
 
                 <a
-                  href="mailto:pranjal.2025ug1073@iiitranchi.in"
+                  href="mailto:inf.syphic.01@gmail.com"
                   className="inline-block px-8 py-3 rounded-full font-display text-xl tracking-wider transition-all"
                   style={{
                     background: 'linear-gradient(135deg, hsl(330 100% 65%), hsl(280 87% 44%))',
